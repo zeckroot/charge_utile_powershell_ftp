@@ -1,0 +1,48 @@
+# Compte ftp
+$ user  =  " utilisateur "
+# Mot de passe du compte ftp
+$ password  =  " Powershell "
+# Source du dossier
+$ localdir  =  " C: \ Scripts \ "
+# Destination du dossier
+$ ftpdir  =  " ftp://ftp.server.com/uploads/ "
+ 
+$ client  =  New-Object System.Net.WebClient
+$ client .Credentials  =  New-Object System.Net.NetworkCredential ( $ utilisateur , $ mot de passe )
+ 
+# Debut de la création du dossier distant.
+$ parentfolder  =  $ localdir .split ( " \ " ) [ -1 ]
+Write-Host  " Création de $ parentfolder "
+$ makedir  = [ System.Net.WebRequest ] :: Create ( $ ftpdir + $ parentfolder );
+$ makedir .Credentials  =  New-Object System.Net.NetworkCredential ( $ utilisateur , $ mot de passe )
+$ makedir .Méthode  = [ System.Net.WebRequestMethods + FTP ] :: makeDirectory;
+$ makedir .GetResponse ();
+# Fin de la création du dossier distant
+ 
+ 
+foreach ( $ item  à  Get-ChildItem  - récursion localdir de $ ) {
+ 
+    $ filename  = [ system.io.path ] :: GetFullPath ( $ item .FullName ) .SubString ([ system.io.path ] :: GetFullPath ( $ rép_local ). Longueur +  1 )
+ 
+    si ( $ article .attributes  -eq  " Répertoire " ) {
+ 
+        essayer {
+            Write-Host  " Création de $ item .Name "
+ 
+            $ makedir  = [ System.Net.WebRequest ] :: Create ( $ ftpdir + " / " + $ parentfolder + " / " + $ filename );
+            $ makedir .Credentials  =  New-Object System.Net.NetworkCredential ( $ utilisateur , $ mot de passe )
+            $ makedir .Méthode  = [ System.Net.WebRequestMethods + FTP ] :: makeDirectory;
+            $ makedir .GetResponse ();
+ 
+            }
+            catch [ Net.WebException ] {
+            Write-Host  $ item .Name existe probablement ...
+            }
+ 
+            continuer ;
+        }
+ 
+        Write-Host  " Transfert de $ item ... "
+        $ file  =  New-Object System.Uri ( $ ftpdir + " / " + $ parentfolder + " / " + $ filename )
+        $ client .UploadFile ( $ file ,  $ item .FullName )
+    }
